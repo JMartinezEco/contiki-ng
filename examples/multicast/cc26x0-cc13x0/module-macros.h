@@ -29,6 +29,6 @@
  */
 /*---------------------------------------------------------------------------*/
 /* Code/RAM footprint savings so that things will fit on sensortags */
-#define NETSTACK_MAX_ROUTE_ENTRIES    4
-#define NBR_TABLE_CONF_MAX_NEIGHBORS  4
-#define QUEUEBUF_CONF_NUM             4
+#define NETSTACK_MAX_ROUTE_ENTRIES    1
+#define NBR_TABLE_CONF_MAX_NEIGHBORS  1
+#define QUEUEBUF_CONF_NUM             1

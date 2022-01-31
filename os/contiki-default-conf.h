@@ -38,7 +38,7 @@
 
 /* IEEE802154_CONF_PANID defines the default PAN ID for IEEE 802.15.4 networks */
 #ifndef IEEE802154_CONF_PANID
-#define IEEE802154_CONF_PANID 0xabcd
+#define IEEE802154_CONF_PANID 0xcaac
 #endif /* IEEE802154_CONF_PANID */
 
 /* IEEE802154_CONF_DEFAULT_CHANNEL defines the default channel for IEEE 802.15.4
@@ -48,7 +48,7 @@
  * - TSCH: uses its own TSCH_DEFAULT_HOPPING_SEQUENCE instead
  */
 #ifndef IEEE802154_CONF_DEFAULT_CHANNEL
-#define IEEE802154_CONF_DEFAULT_CHANNEL 26
+#define IEEE802154_CONF_DEFAULT_CHANNEL 0
 #endif /* IEEE802154_CONF_DEF_CHANNEL */
 
 /* QUEUEBUF_CONF_NUM specifies the number of queue buffers. Queue

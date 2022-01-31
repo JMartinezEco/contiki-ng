@@ -43,17 +43,18 @@
 #include "contiki-lib.h"
 #include "contiki-net.h"
 #include "net/ipv6/multicast/uip-mcast6.h"
+// #include <stdio.h> /* For printf() */
 
-#include <string.h>
-#include <inttypes.h>
+// #include <string.h>
+// #include <inttypes.h>
 
-#define DEBUG DEBUG_PRINT
+// #define DEBUG DEBUG_PRINT
 #include "net/ipv6/uip-debug.h"
-#include "net/routing/routing.h"
+// #include "net/routing/routing.h"
 
 #define MAX_PAYLOAD_LEN 120
-#define MCAST_SINK_UDP_PORT 3001 /* Host byte order */
-#define SEND_INTERVAL CLOCK_SECOND /* clock ticks */
+#define MCAST_SINK_UDP_PORT 20000 /* Host byte order */
+#define SEND_INTERVAL 5 /* clock ticks */
 #define ITERATIONS 100 /* messages */
 
 /* Start sending messages START_DELAY secs after we start so that routing can
@@ -118,7 +119,7 @@ PROCESS_THREAD(rpl_root_process, ev, data)
 
   PROCESS_BEGIN();
 
-  PRINTF("Multicast Engine: '%s'\n", UIP_MCAST6.name);
+  // PRINTF("Multicast Engine: '%s'\n", UIP_MCAST6.name);
 
   NETSTACK_ROUTING.root_start();
 
@@ -128,6 +129,7 @@ PROCESS_THREAD(rpl_root_process, ev, data)
   while(1) {
     PROCESS_YIELD();
     if(etimer_expired(&et)) {
+      // printf('a');
       if(seq_id == ITERATIONS) {
         etimer_stop(&et);
       } else {

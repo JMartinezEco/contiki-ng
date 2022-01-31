@@ -45,12 +45,11 @@
 #include "contiki-net.h"
 #include "net/ipv6/multicast/uip-mcast6.h"
 
-#include <string.h>
 
 #define DEBUG DEBUG_PRINT
 #include "net/ipv6/uip-debug.h"
 
-#define MCAST_SINK_UDP_PORT 3001 /* Host byte order */
+#define MCAST_SINK_UDP_PORT 20000 /* Host byte order */
 
 static struct uip_udp_conn *sink_conn;
 static uint16_t count;

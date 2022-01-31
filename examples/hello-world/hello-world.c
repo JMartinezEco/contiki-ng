@@ -1,65 +1,62 @@
-/*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the Institute nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE INSTITUTE OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- * This file is part of the Contiki operating system.
- *
- */
-
-/**
- * \file
- *         A very simple Contiki application showing how Contiki programs look
- * \author
- *         Adam Dunkels <adam@sics.se>
- */
 
 #include "contiki.h"
+#include "simple-udp.h"
+#include "sys/log.h"
+#define LOG_MODULE "Main"
+#define LOG_LEVEL LOG_LEVEL_MAIN
 
-#include <stdio.h> /* For printf() */
+static struct simple_udp_connection udp_conn;
+static void
+udp_rx_callback(struct simple_udp_connection *c,
+         const uip_ipaddr_t *sender_addr,
+         uint16_t sender_port,
+         const uip_ipaddr_t *receiver_addr,
+         uint16_t receiver_port,
+         const uint8_t *data,
+         uint16_t datalen)
+{
+  printf("Se ha recibido un mensaje");	
+  printf("\n");
+}
+
+
+
 /*---------------------------------------------------------------------------*/
 PROCESS(hello_world_process, "Hello world process");
 AUTOSTART_PROCESSES(&hello_world_process);
 /*---------------------------------------------------------------------------*/
+
+
 PROCESS_THREAD(hello_world_process, ev, data)
 {
   static struct etimer timer;
 
   PROCESS_BEGIN();
 
-  /* Setup a periodic timer that expires after 10 seconds. */
-  etimer_set(&timer, CLOCK_SECOND * 10);
+  uip_ipaddr_t destination_ipaddr;
+  uip_ip6addr(&destination_ipaddr, 0xFF02,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0001);
 
+  if(simple_udp_register(&udp_conn, 20000, NULL, 20000, udp_rx_callback)){
+    printf("Se ha abierto el puerto UDP correctamente\n");
+  }else{
+    printf("No se ha podido abrir el puerto UDP\n");
+  }
+
+  etimer_set(&timer, CLOCK_SECOND * 1);
+
+  uint8_t payload[2] = { 0x1, 0x2 };
+  simple_udp_sendto(&udp_conn, payload, 2, &destination_ipaddr);
   while(1) {
-    printf("Hello, world\n");
+    
+    printf("DIOS FUNCIONA fenomenalmente bien");	
+    printf("\n");
 
-    /* Wait for the periodic timer to expire and then restart the timer. */
+    simple_udp_send (&udp_conn, payload, 2);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
     etimer_reset(&timer);
   }
+
+
 
   PROCESS_END();
 }
