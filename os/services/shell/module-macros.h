@@ -1,1 +1,1 @@
-#define BUILD_WITH_SHELL 1
+#define BUILD_WITH_SHELL 0
