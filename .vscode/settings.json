@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "log.h": "c"
+        "log.h": "c",
+        "simple-udp.h": "c",
+        "rf.h": "c"
     }
 }
