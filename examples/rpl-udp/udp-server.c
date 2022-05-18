@@ -28,11 +28,6 @@
  */
 
 #include "contiki.h"
-<<<<<<< Updated upstream
-=======
-#include <stdlib.h>
-// #include "net/routing/rpl-lite/rpl.h"
->>>>>>> Stashed changes
 #include "net/routing/routing.h"
 #include "net/netstack.h"
 #include "net/ipv6/simple-udp.h"
@@ -59,16 +54,6 @@ udp_rx_callback(struct simple_udp_connection *c,
          const uint8_t *data,
          uint16_t datalen)
 {
-<<<<<<< Updated upstream
-  LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
-  LOG_INFO_6ADDR(sender_addr);
-  LOG_INFO_("\n");
-#if WITH_SERVER_REPLY
-  /* send back the same string to the client as an echo reply */
-  LOG_INFO("Sending response.\n");
-  simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
-#endif /* WITH_SERVER_REPLY */
-=======
   LOG_INFO("Received response ");
   LOG_INFO("'%.*s' from ", datalen, (char *) data);
   LOG_INFO_6ADDR(sender_addr);
@@ -82,7 +67,6 @@ udp_rx_callback(struct simple_udp_connection *c,
   // NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
   // printf("El RSSI medido es de: %i", radio_rssi);
   // printf("\n");
->>>>>>> Stashed changes
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_server_process, ev, data)
@@ -98,9 +82,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
   PROCESS_END();
 }
-<<<<<<< Updated upstream
-/*---------------------------------------------------------------------------*/
-=======
 
 
 PROCESS_THREAD(send_msg_process, ev, data)
@@ -130,4 +111,3 @@ PROCESS_THREAD(send_msg_process, ev, data)
 
   PROCESS_END();
 }
->>>>>>> Stashed changes

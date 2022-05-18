@@ -29,14 +29,6 @@ udp_rx_callback(struct simple_udp_connection *c,
          const uint8_t *data,
          uint16_t datalen)
 {
-<<<<<<< Updated upstream
-
-  LOG_INFO("Received response '%.*s' from ", datalen, (char *) data);
-  LOG_INFO_6ADDR(sender_addr);
-#if LLSEC802154_CONF_ENABLED
-  LOG_INFO_(" LLSEC LV:%d", uipbuf_get_attr(UIPBUF_ATTR_LLSEC_LEVEL));
-#endif
-=======
   static char str[300];
   LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
   LOG_INFO_6ADDR(sender_addr);
@@ -44,7 +36,6 @@ udp_rx_callback(struct simple_udp_connection *c,
   snprintf(str, sizeof(str), "{id: '234', count: 4, function: 'getAllData', power: '0.4', current: '0.4', energy: '0.4', temp: '0.4', voltage: '0.4'}");
   simple_udp_sendto(&udp_conn, str, strlen(str), sender_addr);
 
->>>>>>> Stashed changes
   LOG_INFO_("\n");
 
 }
