@@ -28,6 +28,11 @@
  */
 
 #include "contiki.h"
+<<<<<<< Updated upstream
+=======
+#include <stdlib.h>
+// #include "net/routing/rpl-lite/rpl.h"
+>>>>>>> Stashed changes
 #include "net/routing/routing.h"
 #include "net/netstack.h"
 #include "net/ipv6/simple-udp.h"
@@ -54,6 +59,7 @@ udp_rx_callback(struct simple_udp_connection *c,
          const uint8_t *data,
          uint16_t datalen)
 {
+<<<<<<< Updated upstream
   LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
   LOG_INFO_6ADDR(sender_addr);
   LOG_INFO_("\n");
@@ -62,6 +68,21 @@ udp_rx_callback(struct simple_udp_connection *c,
   LOG_INFO("Sending response.\n");
   simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
 #endif /* WITH_SERVER_REPLY */
+=======
+  LOG_INFO("Received response ");
+  LOG_INFO("'%.*s' from ", datalen, (char *) data);
+  LOG_INFO_6ADDR(sender_addr);
+  LOG_INFO_("\n");
+    // Estas dos de debajo para DALI
+    // printf("%s", data);
+    // memset((char*)data, 0, datalen );
+
+  // float rssi = get_value(RADIO_PARAM_LAST_RSSI);
+  // radio_value_t radio_rssi; 
+  // NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
+  // printf("El RSSI medido es de: %i", radio_rssi);
+  // printf("\n");
+>>>>>>> Stashed changes
 }
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_server_process, ev, data)
@@ -77,4 +98,36 @@ PROCESS_THREAD(udp_server_process, ev, data)
 
   PROCESS_END();
 }
+<<<<<<< Updated upstream
 /*---------------------------------------------------------------------------*/
+=======
+
+
+PROCESS_THREAD(send_msg_process, ev, data)
+{
+  
+  static unsigned count = 2;
+  static char str[300];
+  uip_ipaddr_t dest_ipaddr;
+  PROCESS_BEGIN();
+
+
+
+  while(1) {
+      etimer_set(&periodic_timer, CLOCK_SECOND);
+      PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x200+count,0x0+count,0x0+count,0x0+count);
+        LOG_INFO("Sending request %u to ", count);
+        LOG_INFO_6ADDR(&dest_ipaddr);
+        LOG_INFO_("\n");
+        snprintf(str, sizeof(str), "{id: '234', count: %d, function: 'getAllData', dimming: '0.4'}", count);
+        simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
+        count++;
+        if (count == 10) {
+          count = 2;
+        }
+  }
+
+  PROCESS_END();
+}
+>>>>>>> Stashed changes
