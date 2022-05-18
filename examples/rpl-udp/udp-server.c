@@ -41,9 +41,11 @@
 #define UDP_SERVER_PORT	5678
 
 static struct simple_udp_connection udp_conn;
+static struct etimer periodic_timer;
 
 PROCESS(udp_server_process, "UDP server");
-AUTOSTART_PROCESSES(&udp_server_process);
+PROCESS(send_msg_process, "UDP Message");
+AUTOSTART_PROCESSES(&udp_server_process, &send_msg_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
