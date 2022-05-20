@@ -40,10 +40,13 @@
 #define UDP_CLIENT_PORT	8765
 #define UDP_SERVER_PORT	5678
 
+#define SEND_INTERVAL		  (5 * CLOCK_SECOND)
+
 static struct simple_udp_connection udp_conn;
 
 PROCESS(udp_server_process, "UDP server");
-AUTOSTART_PROCESSES(&udp_server_process);
+PROCESS(send_msg_process, "UDP message");
+AUTOSTART_PROCESSES(&udp_server_process, &send_msg_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
@@ -57,12 +60,18 @@ udp_rx_callback(struct simple_udp_connection *c,
   LOG_INFO("Received request '%.*s' from ", datalen, (char *) data);
   LOG_INFO_6ADDR(sender_addr);
   LOG_INFO_("\n");
-#if WITH_SERVER_REPLY
-  /* send back the same string to the client as an echo reply */
-  LOG_INFO("Sending response.\n");
-  simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
-#endif /* WITH_SERVER_REPLY */
+
+  // float rssi = get_value(RADIO_PARAM_LAST_RSSI);
+  radio_value_t radio_rssi; 
+  NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
+  printf("El RSSI medido es de: %i", radio_rssi);
+  printf("\n");
+
 }
+
+
+
+
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_server_process, ev, data)
 {
@@ -78,3 +87,41 @@ PROCESS_THREAD(udp_server_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
+
+
+PROCESS_THREAD(send_msg_process, ev, data)
+{
+  static struct etimer periodic_timer;
+  static unsigned count = 2;
+  static char str[300];
+  uip_ipaddr_t dest_ipaddr;
+  PROCESS_BEGIN();
+
+
+  etimer_set(&periodic_timer, SEND_INTERVAL);
+  while(1) {
+      PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&periodic_timer));
+        // uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x200+count,0x0+count,0x0+count,0x0+count);
+        if (count%2==0){
+
+        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x141F,0x9084);
+        }else{
+
+        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x2656,0x7739);
+        }
+        LOG_INFO("Sending request %u to ", count);
+        LOG_INFO_6ADDR(&dest_ipaddr);
+        LOG_INFO_("\n");
+        // snprintf(str, sizeof(str), "{id: '234', count: %d, function: 'getAllData', dimming: '0.4'}", count);
+        snprintf(str, sizeof(str), "hello: %d", count);
+        simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
+        count++;
+        if (count == 10) {
+          count = 2;
+        }
+  etimer_set(&periodic_timer, SEND_INTERVAL);
+ 
+  }
+
+  PROCESS_END();
+}
