@@ -93,7 +93,7 @@ PROCESS_THREAD(send_msg_process, ev, data)
 {
   static struct etimer periodic_timer;
   static unsigned count = 2;
-  static char str[300];
+  static char str[100];
   uip_ipaddr_t dest_ipaddr;
   PROCESS_BEGIN();
 
@@ -104,16 +104,15 @@ PROCESS_THREAD(send_msg_process, ev, data)
         // uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x200+count,0x0+count,0x0+count,0x0+count);
         if (count%2==0){
 
-        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x141F,0x9084);
+        // uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x141F,0x9084);
         }else{
 
-        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x2656,0x7739);
+        uip_ip6addr(&dest_ipaddr,0xfd00,0,0,0,0x0212,0x4B00,0x2656,0x7763);
         }
         LOG_INFO("Sending request %u to ", count);
         LOG_INFO_6ADDR(&dest_ipaddr);
         LOG_INFO_("\n");
-        // snprintf(str, sizeof(str), "{id: '234', count: %d, function: 'getAllData', dimming: '0.4'}", count);
-        snprintf(str, sizeof(str), "hello: %d", count);
+        snprintf(str, sizeof(str), "{id: '234', count: %d, function: 'setDimming', dimming: '0.4'}", count);
         simple_udp_sendto(&udp_conn, str, strlen(str), &dest_ipaddr);
         count++;
         if (count == 10) {
