@@ -22,23 +22,23 @@
 // Settings RPL
 // #define COOJA_RADIO_CONF_BUFSIZE 1024
 // #define PACKETBUF_CONF_SIZE 1024
-#define RPL_CONF_DIS_INTERVAL 5
+#define RPL_CONF_DIS_INTERVAL 1
 
 // Settings bootloader
-#define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE 0xC5 // Enable ROM boot loader
-#define SET_CCFG_BL_CONFIG_BL_LEVEL 0x1			  // Active high to open boot loader backdoor
-#define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER 0x08	  // DIO number for boot loader backdoor
-#define SET_CCFG_BL_CONFIG_BL_ENABLE 0xC5		  // Enabled boot loader backdoor
+// #define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE 0xC5 // Enable ROM boot loader
+// #define SET_CCFG_BL_CONFIG_BL_LEVEL 0x1			  // Active high to open boot loader backdoor
+// #define SET_CCFG_BL_CONFIG_BL_PIN_NUMBER 0x08	  // DIO number for boot loader backdoor
+// #define SET_CCFG_BL_CONFIG_BL_ENABLE 0xC5		  // Enabled boot loader backdoor
 
 // Ram optimization
 // the number of packets in the link-layer queue. 4 is probably a lower bound for reasonable operation. As the traffic load increases, e.g. more frequent traffic or larger datagrams, you will need to increase this parameter.
-#define QUEUEBUF_CONF_NUM 4
+#define QUEUEBUF_CONF_NUM 5
 
 // the number of entries in the neighbor table. A value greater than the maximum network density is safe. A value lower than that will also work, as the neighbor table will automatically focus on relevant neighbors. But too low values will result in degraded performance.
-#define NBR_TABLE_CONF_MAX_NEIGHBORS 4
+#define NBR_TABLE_CONF_MAX_NEIGHBORS 5
 
 // the number of routing entries, i.e., in RPL non-storing mode, the number of links in the routing graph, and in storing mode, the number of routing table elements. At the network root, this must be set to the maximum network size. In non-storing mode, other nodes can set this parameter to 0. In storing mode, it is recommended for all nodes to also provision enough entries for each node in the network.
-#define NETSTACK_MAX_ROUTE_ENTRIES 50
+#define NETSTACK_MAX_ROUTE_ENTRIES 400
 
 // As mentioned above. Disable if no fragmentation is needed.
 #define SICSLOWPAN_CONF_FRAG 1

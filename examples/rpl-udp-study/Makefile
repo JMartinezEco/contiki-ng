@@ -2,7 +2,7 @@ CONTIKI_PROJECT = udp-client udp-server
 # CONTIKI_PROJECT = udp-server
 
 TARGET=simplelink
-BOARD=launchpad/cc1310
+BOARD=launchpad/cc1312r1
 
 MODULES += os/services/shell
 
