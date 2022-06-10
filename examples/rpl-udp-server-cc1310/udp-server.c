@@ -71,9 +71,19 @@ udp_rx_callback(struct simple_udp_connection *c,
                 uint16_t datalen)
 {
   leds_on(GREEN);
-  printf("\n");
-  printf("%s\n", data);
-  printf("\n");
+  if (strcmp((const char *)data, "Tracking") == 0)
+  {
+    printf("\n");
+    printf("{\"%s\": \"", data);
+    LOG_INFO_6ADDR(sender_addr);
+    printf("\"}\n");
+  }
+  else
+  {
+    printf("\n");
+    printf("%s\n", data);
+    printf("\n");
+  }
   leds_off(GREEN);
   // LOG_INFO("Received request '%.*s' from ", datalen, (char *)data);
   // LOG_INFO_6ADDR(sender_addr);

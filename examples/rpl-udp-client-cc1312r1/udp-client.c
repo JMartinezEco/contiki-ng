@@ -28,7 +28,8 @@ uip_ipaddr_t dest_ipaddr;
 
 /*---------------------------------------------------------------------------*/
 PROCESS(udp_client_process, "UDP client");
-AUTOSTART_PROCESSES(&udp_client_process);
+PROCESS(udp_tracking_process, "UDP tracking");
+AUTOSTART_PROCESSES(&udp_client_process, &udp_tracking_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
@@ -41,13 +42,6 @@ udp_rx_callback(struct simple_udp_connection *c,
 {
 
   leds_on(GREEN);
-
-  // LOG_INFO("Received request '%.*s' from ", datalen, (char *)data);
-  // LOG_INFO_6ADDR(sender_addr);
-  // LOG_INFO("Sending response.\n");
-  // snprintf(str, sizeof(str), "{id: '234', count: 4, function: 'getAllData', power: '0.4'}");
-  // simple_udp_sendto(&udp_conn, str, strlen(str), sender_addr);
-  // simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
 
   // Almacenamos la IP que nos ha enviado el mensaje
   dest_ipaddr = *sender_addr;
@@ -104,6 +98,29 @@ PROCESS_THREAD(udp_client_process, ev, data)
       memset(received_message_from_uart, 0, sizeof received_message_from_uart);
     }
     etimer_set(&timer, 0.5 * CLOCK_SECOND);
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
+  }
+  PROCESS_END();
+}
+
+PROCESS_THREAD(udp_tracking_process, ev, data)
+{
+
+  PROCESS_BEGIN();
+
+  simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
+                      UDP_SERVER_PORT, udp_rx_callback);
+
+  while (1)
+  {
+    if (NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr))
+    {
+      static char str[32];
+      // snprintf(str, sizeof(str), "Tracking &dest_ipaddr", count);
+      // Enviamos el mensaje de vuelta
+      simple_udp_sendto(&udp_conn, "Tracking", 20, &dest_ipaddr);
+    }
+    etimer_set(&timer, (10 * CLOCK_SECOND));
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
   }
   PROCESS_END();
