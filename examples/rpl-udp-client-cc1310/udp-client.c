@@ -17,6 +17,9 @@
 #define GREEN 2
 
 static struct simple_udp_connection udp_conn;
+unsigned char received_message_from_uart[200];
+int end_of_string = 0;
+int index = 0;
 
 static struct etimer timer;
 
@@ -36,17 +39,45 @@ udp_rx_callback(struct simple_udp_connection *c,
                 const uint8_t *data,
                 uint16_t datalen)
 {
+
   leds_on(GREEN);
-  LOG_INFO("Received request from ");
-  LOG_INFO_6ADDR(sender_addr);
-  LOG_INFO("Sending response.\n");
-  simple_udp_sendto(&udp_conn, "Recibido, gracias!", 20, sender_addr);
+
+  // LOG_INFO("Received request '%.*s' from ", datalen, (char *)data);
+  // LOG_INFO_6ADDR(sender_addr);
+  // LOG_INFO("Sending response.\n");
+  // snprintf(str, sizeof(str), "{id: '234', count: 4, function: 'getAllData', power: '0.4'}");
+  // simple_udp_sendto(&udp_conn, str, strlen(str), sender_addr);
+  // simple_udp_sendto(&udp_conn, data, datalen, sender_addr);
+
+  // Almacenamos la IP que nos ha enviado el mensaje
+  dest_ipaddr = *sender_addr;
+
+  printf("%s\n", data);
+  leds_off(GREEN);
+}
+
+int uart_handler(unsigned char c)
+{
+  if (c == '\n')
+  {
+    end_of_string = 1;
+    index = 0;
+  }
+  else
+  {
+    received_message_from_uart[index] = c;
+    index++;
+  }
+  return 0;
 }
 
 PROCESS_THREAD(udp_client_process, ev, data)
 {
 
   PROCESS_BEGIN();
+
+  uart0_init();
+  uart0_set_callback(uart_handler);
 
   simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
                       UDP_SERVER_PORT, udp_rx_callback);
@@ -57,8 +88,23 @@ PROCESS_THREAD(udp_client_process, ev, data)
   leds_off(RED);
   leds_off(GREEN);
 
-  // etimer_set(&timer, 0.5 * CLOCK_SECOND);
-  // PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
+  while (1)
+  {
+    if (end_of_string == 1 && received_message_from_uart[0] != 0)
+    {
+      leds_on(RED);
 
+      // Enviamos el mensaje de vuelta
+      simple_udp_sendto(&udp_conn, received_message_from_uart, 200, &dest_ipaddr);
+
+      //  Se borra el buffer del mensaje UART
+      index = 0;
+      end_of_string = 0;
+      leds_off(RED);
+      memset(received_message_from_uart, 0, sizeof received_message_from_uart);
+    }
+    etimer_set(&timer, 0.5 * CLOCK_SECOND);
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
+  }
   PROCESS_END();
 }

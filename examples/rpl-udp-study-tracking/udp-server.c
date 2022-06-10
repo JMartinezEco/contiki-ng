@@ -41,16 +41,17 @@
 #define UDP_CLIENT_PORT 8765
 #define UDP_SERVER_PORT 5678
 
+#define SEND_INTERVAL (5 * CLOCK_SECOND)
+
 #define RED 1
 #define GREEN 2
 
 static struct simple_udp_connection udp_conn;
 
-static struct etimer timer;
+// static struct etimer timer;
 
 PROCESS(udp_server_process, "UDP server");
-PROCESS(send_msg_process, "UDP message");
-AUTOSTART_PROCESSES(&udp_server_process, &send_msg_process);
+AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
@@ -65,12 +66,13 @@ udp_rx_callback(struct simple_udp_connection *c,
   LOG_INFO_6ADDR(sender_addr);
   LOG_INFO_("\n");
 
-  // float rssi = get_value(RADIO_PARAM_LAST_RSSI);
-  radio_value_t radio_rssi;
-  NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
-  printf("El RSSI medido es de: %i", radio_rssi);
-  printf("\n");
+  // // float rssi = get_value(RADIO_PARAM_LAST_RSSI);
+  // radio_value_t radio_rssi;
+  // NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
+  // printf("El RSSI medido es de: %i", radio_rssi);
+  // printf("\n");
 }
+
 
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_server_process, ev, data)
@@ -88,41 +90,3 @@ PROCESS_THREAD(udp_server_process, ev, data)
 }
 /*---------------------------------------------------------------------------*/
 
-PROCESS_THREAD(send_msg_process, ev, data)
-{
-  uip_ipaddr_t dest_ipaddr;
-  PROCESS_BEGIN();
-
-  leds_on(RED);
-  leds_on(GREEN);
-  etimer_set(&timer, 1 * CLOCK_SECOND);
-  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-  leds_off(RED);
-  leds_off(GREEN);
-  int i = 1;
-  while (1)
-  {
-    leds_on(RED);
-
-    LOG_INFO("Enviando desde el servidor el paquete %u\n", i);
-    uip_ip6addr(&dest_ipaddr, 0xfd00, 0, 0, 0, (0x0200 + i), i, i, i);
-    // Enviamos el mensaje de vuelta
-    simple_udp_sendto(&udp_conn, "Hola desde el servidor", 100, &dest_ipaddr);
-
-    // Se borra el buffer del mensaje UART
-    leds_off(RED);
-
-    if (i == 255)
-    {
-      i = 0;
-    }
-    else
-    {
-      i++;
-    }
-
-    etimer_set(&timer, 0.1 * CLOCK_SECOND);
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-  }
-  PROCESS_END();
-}
