@@ -61,6 +61,8 @@ LDLIBS := $(subst MiniMac_JN516x, ,$(LDLIBS))
   LDLIBS += JPT_$(JENNIC_CHIP)
 endif
 
+CFLAGS += -std=gnu99
+
 # Enable all warnings
 CFLAGS += -Wall
 # Disable warnings that result many false positives with the Contiki core
@@ -178,7 +180,7 @@ LDFLAGS += -Wl,--defsym=_stack_origin=_ram_top
 
 ########################################################################
 
-MOTELIST = python $(CONTIKI)/tools/jn516x/mote-list.py
+MOTELIST = $(CONTIKI)/tools/jn516x/mote-list.py
 
 # Check if we are running under Windows
 ifeq ($(HOST_OS),Windows)
@@ -224,15 +226,13 @@ define FINALIZE_DEPENDENCY_
 # hack: subsitute windows path back to cygwin path
 sed -e 's/c:\//\/cygdrive\/c\//' $(@:.o=.d) > $(@:.o=.$$$$); \
 cp $(@:.o=.$$$$) $(@:.o=.d); \
-sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-    -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.$$$$) >> $(@:.o=.d); \
 rm -f $(@:.o=.$$$$)
 endef
 
 CUSTOM_RULE_C_TO_OBJECTDIR_O = 1
 $(OBJECTDIR)/%.o: %.c | $(OBJECTDIR)
 	$(TRACE_CC)
-	$(Q)$(CC) $(CFLAGS) -MMD -c $< -o $@
+	$(Q)$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 	@$(FINALIZE_DEPENDENCY_)
 
 CUSTOM_RULE_LINK = 1

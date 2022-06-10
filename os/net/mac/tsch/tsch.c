@@ -57,6 +57,7 @@
 #include "net/mac/mac-sequence.h"
 #include "lib/random.h"
 #include "net/routing/routing.h"
+#include <inttypes.h>
 
 #if TSCH_WITH_SIXTOP
 #include "net/mac/tsch/sixtop/sixtop.h"
@@ -451,7 +452,7 @@ eb_input(struct input_packet *current_input)
       int32_t asn_diff = TSCH_ASN_DIFF(current_input->rx_asn, eb_ies.ie_asn);
       if(asn_diff != 0) {
         /* We disagree with our time source's ASN -- leave the network */
-        LOG_WARN("! ASN drifted by %ld, leaving the network\n", asn_diff);
+        LOG_WARN("! ASN drifted by %"PRId32", leaving the network\n", asn_diff);
         tsch_disassociate();
       }
 
@@ -495,7 +496,7 @@ static void
 tsch_rx_process_pending()
 {
   int16_t input_index;
-  /* Loop on accessing (without removing) a pending input packet */
+  /* Loop on accessing (without removing) a pending output packet */
   while((input_index = ringbufindex_peek_get(&input_ringbuf)) != -1) {
     struct input_packet *current_input = &input_array[input_index];
     frame802154_t frame;
@@ -529,6 +530,7 @@ tsch_rx_process_pending()
 static void
 tsch_tx_process_pending(void)
 {
+  uint16_t num_packets_freed = 0;
   int16_t dequeued_index;
   /* Loop on accessing (without removing) a pending input packet */
   while((dequeued_index = ringbufindex_peek_get(&dequeued_ringbuf)) != -1) {
@@ -543,10 +545,14 @@ tsch_tx_process_pending(void)
     mac_call_sent_callback(p->sent, p->ptr, p->ret, p->transmissions);
     /* Free packet queuebuf */
     tsch_queue_free_packet(p);
-    /* Free all unused neighbors */
-    tsch_queue_free_unused_neighbors();
     /* Remove dequeued packet from ringbuf */
     ringbufindex_get(&dequeued_ringbuf);
+    num_packets_freed++;
+  }
+
+  if(num_packets_freed > 0) {
+    /* Free all unused neighbors */
+    tsch_queue_free_unused_neighbors();
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -565,7 +571,7 @@ tsch_start_coordinator(void)
   tsch_is_associated = 1;
   tsch_join_priority = 0;
 
-  LOG_INFO("starting as coordinator, PAN ID %x, asn-%x.%lx\n",
+  LOG_INFO("starting as coordinator, PAN ID %x, asn-%x.%"PRIx32"\n",
       frame802154_get_pan_id(), tsch_current_asn.ms1b, tsch_current_asn.ls4b);
 
   /* Start slot operation */
@@ -744,7 +750,7 @@ tsch_associate(const struct input_packet *input_eb, rtimer_clock_t timestamp)
 #endif
 
       tsch_association_count++;
-      LOG_INFO("association done (%u), sec %u, PAN ID %x, asn-%x.%lx, jp %u, timeslot id %u, hopping id %u, slotframe len %u with %u links, from ",
+      LOG_INFO("association done (%u), sec %u, PAN ID %x, asn-%x.%"PRIx32", jp %u, timeslot id %u, hopping id %u, slotframe len %u with %u links, from ",
              tsch_association_count,
              tsch_is_pan_secured,
              frame.src_pid,

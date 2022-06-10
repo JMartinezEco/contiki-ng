@@ -7,12 +7,11 @@ USER root
 
 # Tools
 RUN apt-get -qq update && \
-    apt-get -qq -y --no-install-recommends install gnupg > /dev/null
+    apt-get -qq -y --no-install-recommends install gnupg ca-certificates software-properties-common > /dev/null
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-  echo "deb http://download.mono-project.com/repo/ubuntu bionic main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
-  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 77B7346A59027B33C10CAFE35E64E954262C4500 && \
-  echo "deb http://ppa.launchpad.net/mosquitto-dev/mosquitto-ppa/ubuntu bionic main" | tee /etc/apt/sources.list.d/mosquitto.list && \
+  echo "deb http://download.mono-project.com/repo/ubuntu stable-bionic main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
+  add-apt-repository ppa:mosquitto-dev/mosquitto-ppa && \
   apt-get -qq update && \
   apt-get -qq -y --no-install-recommends install \
     ant \
@@ -32,7 +31,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
     mosquitto \
     mosquitto-clients \
     net-tools \
-    openjdk-8-jdk \
+    openjdk-11-jdk \
     python-dev \
     python3-dev \
     python-pip \
@@ -56,10 +55,10 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
   && apt-get -qq clean
 
 # Install ARM toolchain
-RUN wget -nv https://github.com/Yagoor/gcc-arm-none-eabi/releases/download/9-2020-q2-update/gcc-arm-none-eabi-9-2020-q4-major-i386-linux.tar.bz2 && \
-  tar xjf gcc-arm-none-eabi-9-2020-q4-major-i386-linux.tar.bz2 -C /tmp/ && \
-  cp -f -r /tmp/gcc-arm-none-eabi-9-2020-q4-major/* /usr/local/ && \
-  rm -rf /tmp/gcc-arm-none-eabi-* gcc-arm-none-eabi-*-linux.tar.bz2
+RUN wget -nv https://github.com/Yagoor/gcc-arm-none-eabi/releases/download/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-i386-linux.tar.bz2 && \
+  tar xjf gcc-arm-none-eabi-10.3-2021.10-i386-linux.tar.bz2 -C /tmp/ && \
+  cp -f -r /tmp/gcc-arm-none-eabi-10.3-2021.10/* /usr/local/ && \
+  rm -rf /tmp/gcc-arm-none-eabi-10.3-2021.10 gcc-arm-none-eabi-10.3-2021.10-i386-linux.tar.bz2
 
 # Install msp430 toolchain
 RUN wget -nv http://simonduq.github.io/resources/mspgcc-4.7.2-compiled.tar.bz2 && \
@@ -110,6 +109,9 @@ RUN pip3 -q install matplotlib
 RUN pip3 -q install nrfutil && \
   pip3 -q install --no-deps -t /usr/local/lib/python3.6/dist-packages --python-version 3.6 --ignore-requires-python --upgrade nrfutil
 
+# Make sure we're using Java 11 for Cooja
+RUN update-java-alternatives --set /usr/lib/jvm/java-1.11.0-openjdk-i386
+
 # Create user, enable X forwarding, add to group dialout
 # -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix
 RUN export uid=1000 gid=1000 && \
@@ -136,10 +138,6 @@ WORKDIR                 ${HOME}
 # Create Cooja shortcut
 RUN echo "#!/bin/bash\nant -Dbasedir=${COOJA} -f ${COOJA}/build.xml run" > ${HOME}/cooja && \
   chmod +x ${HOME}/cooja
-
-# Make sure we're using Java 8 for Cooja
-RUN sudo update-java-alternatives --set /usr/lib/jvm/java-1.8.0-openjdk-i386
-ENV JAVA_HOME           /usr/lib/jvm/java-8-openjdk-i386/
 
 # Download, build and install Renode
 RUN git clone --quiet https://github.com/renode/renode.git \

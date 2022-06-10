@@ -5,7 +5,6 @@
   <project EXPORT="discard">[APPS_DIR]/avrora</project>
   <project EXPORT="discard">[APPS_DIR]/serial_socket</project>
   <project EXPORT="discard">[APPS_DIR]/powertracker</project>
-  <project EXPORT="discard">[APPS_DIR]/radiologger-headless</project>
   <simulation>
     <title>Test ringbufindex</title>
     <randomseed>123456</randomseed>
@@ -25,7 +24,8 @@
       <identifier>mtype297</identifier>
       <description>ringbufindex testee</description>
       <source>[CONFIG_DIR]/code-ringbufindex/test-ringbufindex.c</source>
-      <commands>make test-ringbufindex.cooja TARGET=cooja</commands>
+      <commands>make TARGET=cooja clean
+make test-ringbufindex.cooja TARGET=cooja</commands>
       <moteinterface>org.contikios.cooja.interfaces.Position</moteinterface>
       <moteinterface>org.contikios.cooja.interfaces.Battery</moteinterface>
       <moteinterface>org.contikios.cooja.contikimote.interfaces.ContikiVib</moteinterface>
