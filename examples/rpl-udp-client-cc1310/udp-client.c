@@ -28,8 +28,7 @@ uip_ipaddr_t dest_ipaddr;
 
 /*---------------------------------------------------------------------------*/
 PROCESS(udp_client_process, "UDP client");
-PROCESS(udp_tracking_process, "UDP tracking");
-AUTOSTART_PROCESSES(&udp_client_process, &udp_tracking_process);
+AUTOSTART_PROCESSES(&udp_client_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
@@ -98,28 +97,6 @@ PROCESS_THREAD(udp_client_process, ev, data)
       memset(received_message_from_uart, 0, sizeof received_message_from_uart);
     }
     etimer_set(&timer, 0.5 * CLOCK_SECOND);
-    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-  }
-  PROCESS_END();
-}
-
-PROCESS_THREAD(udp_tracking_process, ev, data)
-{
-
-  PROCESS_BEGIN();
-
-  simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
-                      UDP_SERVER_PORT, udp_rx_callback);
-
-  while (1)
-  {
-    if (NETSTACK_ROUTING.get_root_ipaddr(&dest_ipaddr))
-    {
-      // snprintf(str, sizeof(str), "Tracking &dest_ipaddr", count);
-      // Enviamos el mensaje de vuelta
-      simple_udp_sendto(&udp_conn, "Tracking", 20, &dest_ipaddr);
-    }
-    etimer_set(&timer, (10 * CLOCK_SECOND));
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
   }
   PROCESS_END();
