@@ -33,6 +33,8 @@
 #include "net/routing/routing.h"
 #include "net/netstack.h"
 #include "net/ipv6/simple-udp.h"
+#include "net/ipv6/uip-sr.h"
+#include "net/ipv6/uiplib.h"
 
 #include "sys/log.h"
 #define LOG_MODULE "Server"
@@ -59,6 +61,7 @@ static struct etimer timer;
 
 PROCESS(udp_server_process, "UDP server");
 PROCESS(send_msg_process, "UDP message");
+
 AUTOSTART_PROCESSES(&udp_server_process, &send_msg_process);
 /*---------------------------------------------------------------------------*/
 static void
@@ -71,30 +74,12 @@ udp_rx_callback(struct simple_udp_connection *c,
                 uint16_t datalen)
 {
   leds_on(GREEN);
-  if (strcmp((const char *)data, "Tracking") == 0)
-  {
-    printf("\n");
-    printf("{\"%s\": \"", data);
-    LOG_INFO_6ADDR(sender_addr);
-    printf("\"}\n");
-  }
-  else
-  {
-    printf("\n");
-    printf("%s\n", data);
-    printf("\n");
-  }
+  printf("\n");
+  printf("%s\n", data);
+  printf("\n");
   leds_off(GREEN);
-  // LOG_INFO("Received request '%.*s' from ", datalen, (char *)data);
-  // LOG_INFO_6ADDR(sender_addr);
-  // LOG_INFO_("\n");
-
-  // // float rssi = get_value(RADIO_PARAM_LAST_RSSI);
-  // radio_value_t radio_rssi;
-  // NETSTACK_RADIO.get_value(RADIO_PARAM_LAST_RSSI, &radio_rssi);
-  // printf("El RSSI medido es de: %i", radio_rssi);
-  // printf("\n");
 }
+
 
 int uart_handler(unsigned char c)
 {
@@ -178,20 +163,60 @@ PROCESS_THREAD(send_msg_process, ev, data)
     if (end_of_string == 1 && received_message_from_uart[0] != 0)
     {
       leds_on(RED);
-      getNodeAddressBytes(received_message_from_uart);
+      // Si el mensaje es Tracking, se obtiene la lista de nodos conectados
+      if (strcmp("Tracking", (const char *)received_message_from_uart) == 0)
+      {
+        if (uip_sr_num_nodes() > 0)
+        {
+          uip_sr_node_t *link;
+          link = uip_sr_node_head();
+          while (link != NULL)
+          {
+            printf("fd00::");
+            for (int i = 0; i < 8; i++)
+            {
+              if (link->link_identifier[i] == 0)
+              {
+                printf("00");
+              }
+              else
+              {
+                printf("%x", link->link_identifier[i]);
+              }
+              if (i == 7)
+              {
+                printf("\n");
+              }
+              else if (i % 2 != 0)
+              {
+                printf(":");
+              }
+            }
 
-      uip_ip6addr(&dest_ipaddr, 0xfd00, 0, 0, 0, (0x0200 + addresses[0]), addresses[1], addresses[2], addresses[3]);
-      // Enviamos el mensaje de vuelta
-      simple_udp_sendto(&udp_conn, processed_message_from_uart, 100, &dest_ipaddr);
+            link = uip_sr_node_next(link);
+          }
+        }
+      }
+      // Si el mensaje no es tracking, es un mensaje a reenviar a un nodo
+      else
+      {
+        // Se obtiene la direccion segun los primeros bytes del mensaje
+        getNodeAddressBytes(received_message_from_uart);
+        // Se copia la direccion obtenida al buffer necesario
+        uip_ip6addr(&dest_ipaddr, 0xfd00, 0, 0, 0, (0x0200 + addresses[0]), addresses[1], addresses[2], addresses[3]);
+        // Se envia el mensaje
+        simple_udp_sendto(&udp_conn, processed_message_from_uart, 100, &dest_ipaddr);
+      }
 
-      //  Se borra el buffer del mensaje UART
+      // //  Se borra el buffer del mensaje UART
       index = 0;
       end_of_string = 0;
       memset(received_message_from_uart, 0, sizeof received_message_from_uart);
       memset(processed_message_from_uart, 0, sizeof processed_message_from_uart);
       leds_off(RED);
     }
-    etimer_set(&timer, 0.1 * CLOCK_SECOND);
+
+    etimer_set(&timer, 0.5 * CLOCK_SECOND);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
   }
   PROCESS_END();
