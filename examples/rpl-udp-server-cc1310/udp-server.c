@@ -192,7 +192,7 @@ PROCESS_THREAD(send_msg_process, ev, data)
                 printf(":");
               }
             }
-
+      
             link = uip_sr_node_next(link);
           }
         }

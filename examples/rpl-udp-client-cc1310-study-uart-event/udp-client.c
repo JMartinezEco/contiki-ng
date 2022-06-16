@@ -66,35 +66,23 @@ PROCESS_THREAD(udp_client_process, ev, data)
 {
 
   PROCESS_BEGIN();
-
   uart0_init();
   uart0_set_callback(uart_handler);
 
-  simple_udp_register(&udp_conn, UDP_CLIENT_PORT, NULL,
-                      UDP_SERVER_PORT, udp_rx_callback);
-  leds_on(RED);
-  leds_on(GREEN);
-  etimer_set(&timer, 0.2 * CLOCK_SECOND);
-  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-  leds_off(RED);
-  leds_off(GREEN);
-
   while (1)
   {
+    //wait for uart message
     if (end_of_string == 1 && received_message_from_uart[0] != 0)
-    {
-      leds_on(RED);
+    { 
+      LOG_INFO("Received mensaje\n");
 
-      // Enviamos el mensaje de vuelta
-      simple_udp_sendto(&udp_conn, received_message_from_uart, 200, &dest_ipaddr);
-
-      //  Se borra el buffer del mensaje UART
       index = 0;
       end_of_string = 0;
-      leds_off(RED);
+
+      //  Delete received message from uart
       memset(received_message_from_uart, 0, sizeof received_message_from_uart);
     }
-    etimer_set(&timer, 0.5 * CLOCK_SECOND);
+    etimer_set(&timer, 0.1 * CLOCK_SECOND);
     PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
   }
   PROCESS_END();

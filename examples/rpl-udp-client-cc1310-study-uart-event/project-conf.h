@@ -15,7 +15,7 @@
 // Settings packet size
 // #define COOJA_RADIO_CONF_BUFSIZE 5000
 // #define RF_CONF_RX_BUF_SIZE 800
-#define PACKETBUF_CONF_SIZE 500
+#define PACKETBUF_CONF_SIZE 800
 // #define UIP_CONF_BUFFER_SIZE 800
 // #define SICSLOWPAN_CONF_MAC_MAX_PAYLOAD 1280
 
@@ -23,8 +23,6 @@
 // #define COOJA_RADIO_CONF_BUFSIZE 1024
 // #define PACKETBUF_CONF_SIZE 1024
 #define RPL_CONF_DIS_INTERVAL (5 * CLOCK_SECOND)
-
-#define RPL_CONF_DEFAULT_LIFETIME 5
 
 // Settings bootloader
 #define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE 0xC5 // Enable ROM boot loader
@@ -40,7 +38,7 @@
 #define NBR_TABLE_CONF_MAX_NEIGHBORS 2
 
 // the number of routing entries, i.e., in RPL non-storing mode, the number of links in the routing graph, and in storing mode, the number of routing table elements. At the network root, this must be set to the maximum network size. In non-storing mode, other nodes can set this parameter to 0. In storing mode, it is recommended for all nodes to also provision enough entries for each node in the network.
-#define NETSTACK_MAX_ROUTE_ENTRIES 30
+#define NETSTACK_MAX_ROUTE_ENTRIES 0
 
 // As mentioned above. Disable if no fragmentation is needed.
 #define SICSLOWPAN_CONF_FRAG 1
