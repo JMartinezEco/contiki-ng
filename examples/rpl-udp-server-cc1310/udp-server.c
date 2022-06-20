@@ -60,9 +60,8 @@ int index = 0;
 static struct etimer timer;
 
 PROCESS(udp_server_process, "UDP server");
-PROCESS(send_msg_process, "UDP message");
 
-AUTOSTART_PROCESSES(&udp_server_process, &send_msg_process);
+AUTOSTART_PROCESSES(&udp_server_process);
 /*---------------------------------------------------------------------------*/
 static void
 udp_rx_callback(struct simple_udp_connection *c,
@@ -128,8 +127,10 @@ void getNodeAddressBytes(unsigned char received_message_from_uart[200])
 }
 
 /*---------------------------------------------------------------------------*/
+
 PROCESS_THREAD(udp_server_process, ev, data)
 {
+  uip_ipaddr_t dest_ipaddr;
   PROCESS_BEGIN();
 
   /* Initialize DAG root */
@@ -138,15 +139,6 @@ PROCESS_THREAD(udp_server_process, ev, data)
   /* Initialize UDP connection */
   simple_udp_register(&udp_conn, UDP_SERVER_PORT, NULL,
                       UDP_CLIENT_PORT, udp_rx_callback);
-
-  PROCESS_END();
-}
-/*---------------------------------------------------------------------------*/
-
-PROCESS_THREAD(send_msg_process, ev, data)
-{
-  uip_ipaddr_t dest_ipaddr;
-  PROCESS_BEGIN();
 
   uart0_init();
   uart0_set_callback(uart_handler);
@@ -167,35 +159,24 @@ PROCESS_THREAD(send_msg_process, ev, data)
       if (strcmp("Tracking", (const char *)received_message_from_uart) == 0)
       {
         if (uip_sr_num_nodes() > 0)
+      {
+        uip_sr_node_t *link;
+        /* Our routing links */
+        LOG_INFO("links: %u routing links in total\n", uip_sr_num_nodes());
+        link = uip_sr_node_head();
+        while (link != NULL)
         {
-          uip_sr_node_t *link;
-          link = uip_sr_node_head();
-          while (link != NULL)
-          {
-            printf("fd00::");
-            for (int i = 0; i < 8; i++)
-            {
-              if (link->link_identifier[i] == 0)
-              {
-                printf("00");
-              }
-              else
-              {
-                printf("%x", link->link_identifier[i]);
-              }
-              if (i == 7)
-              {
-                printf("\n");
-              }
-              else if (i % 2 != 0)
-              {
-                printf(":");
-              }
-            }
-      
-            link = uip_sr_node_next(link);
-          }
+          char buf[100];
+          uip_sr_link_snprint(buf, sizeof(buf), link);
+          LOG_INFO("links: %s\n", buf);
+          link = uip_sr_node_next(link);
         }
+        LOG_INFO("links: end of list\n");
+      }
+      else
+      {
+        LOG_INFO("No routing links\n");
+      }
       }
       // Si el mensaje no es tracking, es un mensaje a reenviar a un nodo
       else

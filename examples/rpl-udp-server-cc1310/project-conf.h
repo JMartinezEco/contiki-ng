@@ -25,6 +25,7 @@
 #define RPL_CONF_DIS_INTERVAL (5 * CLOCK_SECOND)
 
 #define RPL_CONF_DEFAULT_LIFETIME 5
+// #define UIP_CONF_ND6_SEND_NS 1
 
 // Settings bootloader
 #define SET_CCFG_BL_CONFIG_BOOTLOADER_ENABLE 0xC5 // Enable ROM boot loader
